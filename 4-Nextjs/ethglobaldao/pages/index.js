@@ -1,69 +1,245 @@
 import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
+import { useState, useEffect } from 'react'
+
+import { Paper, Grid, Button,TextField } from '@material-ui/core'
+import { nftContractAddress } from '../config'
+import NFT from '../contracts/NFT.json'
+import { ethers } from 'ethers'
+import OutlinedInput from '@material-ui/core/OutlinedInput';
+
 
 export default function Home() {
+  const [txError, setTxError] = useState(null)
+  const [walletError, setWalletError] = useState(null)
+  const [currentAccount, setCurrentAccount] = useState("")
+	const [requestedAccounts, setRequestedAccounts] = useState(false)
+  const [correctNetwork, setCorrectNetwork] = useState(false)
+  const [ETHPriceValue, setETHPriceValue] = useState(0)
+
+      // Checks if wallet is connected
+	const checkIfWalletIsConnected = async () => {
+		const { ethereum } = window
+		if (ethereum) {
+			// console.log('Got the ethereum obejct: ', ethereum)
+			const accounts = await ethereum.request({ method: 'eth_accounts' })
+
+			if (accounts.length !== 0) {
+				// console.log('Found authorized Account: ', accounts[0])
+				setCurrentAccount(accounts[0])
+			} else {
+				// console.log('No authorized account found')
+			}
+		} else {
+			setWalletError('Please install MetaMask Wallet.')
+		}
+	}
+
+    // Checks if wallet is connected to the correct network
+	const checkCorrectNetwork = async () => {
+		const { ethereum } = window
+		if (ethereum) {
+			let chainId = await ethereum.request({ method: 'eth_chainId' })
+			// console.log('Connected to chain:' + chainId)
+
+			// const rinkebyChainId = '0x2a'
+
+			// const devChainId = 1337
+      const rinkebyChainId = '0x13881'
+
+			const devChainId = 80001
+			const localhostChainId = `0x${Number(devChainId).toString(16)}`
+
+			if (chainId !== rinkebyChainId && chainId !== localhostChainId) {
+				setCorrectNetwork(false)
+			} else {
+				setCorrectNetwork(true)
+			}
+		} else {
+			setWalletError('Please install MetaMask Wallet.')
+		}
+	}
+
+
+  function walletListener() {
+		const { ethereum } = window
+		if (ethereum) {
+			ethereum.on('accountsChanged', (accounts) => {
+				// Handle the new accounts, or lack thereof.
+				// "accounts" will always be an array, but it can be empty.
+				window.location.reload();
+			});
+			
+			ethereum.on('chainChanged', (chainId) => {
+				// Handle the new chain.
+				// Correctly handling chain changes can be complicated.
+				// We recommend reloading the page unless you have good reason not to.
+				window.location.reload();
+			});
+		} else {
+			setWalletError('Please install MetaMask Wallet.')
+		}
+
+		//   ethereum.on('message', mesg => {
+		// 	  console.log("asd435&&")
+		// 	  console.log(msg)
+		//   })
+
+	  }
+
+  useEffect(() => {
+		checkIfWalletIsConnected()
+		checkCorrectNetwork()
+
+		walletListener()
+	
+	}, [currentAccount])
+
+
+    // Calls Metamask to connect wallet on clicking Connect Wallet button
+	const connectWallet = async () => {
+		try {
+			const { ethereum } = window
+
+			if (!ethereum) {
+				setWalletError('Please install MetaMask Wallet.')
+				return
+			}
+			let chainId = await ethereum.request({ method: 'eth_chainId' })
+      // let chainId = await ethereum.request({
+      //     method: 'wallet_switchEthereumChain',
+      //   params: [{ chainId: '0x13881' }], // '0x3830303031'
+      // })
+			// console.log('Connected to chain:' + chainId)
+
+			const rinkebyChainId = '0x13881'
+
+			const devChainId = 80001
+			const localhostChainId = `0x${Number(devChainId).toString(16)}`
+
+      console.log(localhostChainId)
+      console.log(chainId)
+			if (chainId !== rinkebyChainId && chainId !== localhostChainId) {
+				alert('You are not connected to the Polygon Mumbai Testnet!')
+				return
+			}
+
+			// console.log(requestedAccounts)
+			setRequestedAccounts(true)
+
+			const accounts = await ethereum.request({ method: 'eth_requestAccounts' })
+			
+			// console.log('Found account', accounts[0])
+			setCurrentAccount(accounts[0])
+		} catch (error) {
+			// console.log('Error connecting to metamask', error)
+		}
+	}
+
+
+
+    // Creates transaction to mint NFT on clicking Mint Character button
+	const mintDAONFT = async () => {
+		try {
+
+			const { ethereum } = window
+
+			if (ethereum) {
+
+				const provider = new ethers.providers.Web3Provider(ethereum)
+				const signer = provider.getSigner()
+
+				const nftContract = new ethers.Contract(
+					nftContractAddress,
+					NFT.abi,
+					signer
+				)
+
+
+				let nftTx = await nftContract.mint(currentAccount, "ipfs://QmdXg8XW5gQ57UwXHCR7GZ6cvifUAqMP9rukDzST6mXmuN")
+        console.log('Minting....', nftTx.hash)
+				setMiningStatus(0)
+
+				let tx = await nftTx.wait()
+				setLoadingState(1)
+				// console.log('Mined!', tx)
+				// let event = tx.events[0]
+				// let value = event.args[2]
+				// let tokenId = value.toNumber()
+
+				// console.log(
+				// 	`Mined, see transaction: https://rinkeby.etherscan.io/tx/${nftTx.hash}`
+				// )
+
+				// getMintedNFT(tokenId)
+				setMiningStatus(1)
+				// getNFTs()
+				// window.setTimeout(function(){location.reload()},60000)
+				
+			} else {
+				setWalletError('Please install MetaMask Wallet.')
+			}
+		} catch (error) {
+			// console.log('Error minting character', error)
+			setTxError(error.message)
+		}
+	}
+
+
+  const handleInputChange = async (e) => {
+    e.preventDefault()
+
+    // console.log(e.target.value)
+    setETHPriceValue(e.target.value)
+  }
+
   return (
-    <div className={styles.container}>
-      <Head>
-        <title>Create Next App</title>
-        <meta name="description" content="Generated by create next app" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+    <Grid container item xs={12}>
+				<Grid container item xs={3} justifyContent="center">
+				</Grid>
 
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
+				<Grid container item xs={6} justify="center">
+					{walletError === null ? (
+					currentAccount === "" ? (
+						<Button
+							variant="outlined" disableElevation
+							style={{ border: '2px solid', height: "50px", width: "100%", margin: "2px", marginTop: "80px", maxWidth: "200px" }}
+							aria-label="View Code"
+							disabled={(currentAccount === "" && requestedAccounts)}
+							onClick={connectWallet}
 
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
+						>
+							Connect Wallet
+						</Button>
+					) : correctNetwork ? (
+            <div>
+              {/* <OutlinedInput type="number"  defaultValue="0" placeholder="ETH Price Prediction"> */}
+            <TextField id="outlined-basic" type="number" label="ETH Price Prediction" variant="outlined" style={{marginTop: "50px" }} onChange={handleInputChange}/>
+						{/* </OutlinedInput> */}
+            <Button
+							variant="outlined" disableElevation
+							style={{ border: '2px solid', height: "50px", width: "100%", margin: "2px", marginTop: "10px", maxWidth: "200px" }}
+							aria-label="View Code"
+							onClick={mintDAONFT}
+							// disabled={(nftList.length >= 2 || numMinted == 50)}
+						>
+							Mint NFTs
+						</Button>
+            </div>
+					) : (
+						<Paper elevation={0}
+						style={{width: "100%", margin: "2px", marginTop: "80px", maxWidth: "250px", textAlign: "center"}}
+						>
+							Please connect to Polygon Mumbai Testnet
+						</Paper>
+					)) : (
+						<div style={{marginTop: "80px"}}>{walletError}</div>
+					)}
+				</Grid>
 
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h2>Documentation &rarr;</h2>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h2>Learn &rarr;</h2>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/canary/examples"
-            className={styles.card}
-          >
-            <h2>Examples &rarr;</h2>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h2>Deploy &rarr;</h2>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <span className={styles.logo}>
-            <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
-          </span>
-        </a>
-      </footer>
-    </div>
+				<Grid container item xs={3} justifyContent="center">
+				</Grid>
+			</Grid>
   )
 }
