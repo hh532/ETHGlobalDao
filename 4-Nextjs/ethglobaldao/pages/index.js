@@ -4,11 +4,19 @@ import styles from '../styles/Home.module.css'
 import { useState, useEffect } from 'react'
 
 import { Paper, Grid, Button,TextField } from '@material-ui/core'
-import { nftContractAddress } from '../config'
+import { nftContractAddress, nftURI , REACT_APP_ALCHEMY_KEY} from '../config'
 import NFT from '../contracts/NFT.json'
 import { ethers } from 'ethers'
 import OutlinedInput from '@material-ui/core/OutlinedInput';
+import Moralis from "moralis"
 
+
+const { createAlchemyWeb3 } = require("@alch/alchemy-web3");
+const web3 = createAlchemyWeb3(REACT_APP_ALCHEMY_KEY); 
+export const nftDAOContract = new web3.eth.Contract(
+	NFT.abi,
+	nftContractAddress
+);
 
 export default function Home() {
   const [txError, setTxError] = useState(null)
@@ -157,7 +165,7 @@ export default function Home() {
 				)
 
 
-				let nftTx = await nftContract.mint(currentAccount, "ipfs://QmdXg8XW5gQ57UwXHCR7GZ6cvifUAqMP9rukDzST6mXmuN")
+				let nftTx = await nftContract.mint(currentAccount, nftURI, ETHPriceValue)
         console.log('Minting....', nftTx.hash)
 				setMiningStatus(0)
 
@@ -194,6 +202,82 @@ export default function Home() {
     setETHPriceValue(e.target.value)
   }
 
+
+	const getDAONFTMoralis = async () => {
+		if (currentAccount != "") {
+			// console.log("getting nfts 0")
+			Moralis.start({serverUrl: "https://ctoh1zj64w6s.usemoralis.com:2053/server", appId: "VpyFBXuuopQQy55GBJ9GYpbO5Zp7XYTAZe7X2lTf"})
+			// console.log(currentAccount)
+			// console.log(nftContractAddress)
+			const options = { chain: "mumbai", address: currentAccount,  token_address: nftContractAddress };
+			const polygonNFTS = await Moralis.Web3API.account.getNFTsForContract(options);
+			// console.log("ewqeqweqweqwe")
+			// console.log(polygonNFTS)
+			// console.log("getting nfts 1")
+
+			if (polygonNFTS.result.length > 0) {
+
+				var currNFTList = []
+				for (var i = 0; i < polygonNFTS.result.length; i++ ) {
+					// console.log("getting nfts 2")
+          console.log(polygonNFTS.result[i])
+
+					// const v = await fetch(polygonNFTS.result[i].token_uri).then(r => {
+					// 	return r.text().then(t => {
+					// 		return {"name": JSON.parse(t).name,
+					// 		"img": JSON.parse(t).image.replace("ipfs://", "https://gateway.pinata.cloud/ipfs/"),
+					// 		"token_address": polygonNFTS.result[i].token_address,
+					// 		"token_id": polygonNFTS.result[i].token_id,
+					// 		// "token_uri": polygonNFTS.result[i].token_uri
+					// 	}
+					// 		// currNFTList.push({
+					// 		// 	"name": JSON.parse(t).name,
+					// 		// 	"img": JSON.parse(t).image.replace("ipfs://", "https://gateway.pinata.cloud/ipfs/")
+					// 		// })
+					// 	})
+					// 	.catch()
+					// }).catch()
+					// console.log("£££")
+					// console.log(v)
+					// currNFTList.push(v)
+				}
+				// setNFTList(currNFTList)
+				// console.log(nftList)
+			}
+		}
+	}
+
+
+  const getETHPricePrediction = async () => {
+    if (currentAccount != "") {
+			// console.log("getting BORROW  ----- nfts 0")
+			const tokenIds = await nftDAOContract.methods.getPricePrediction(1).call() // returns array
+      console.log(tokenIds)
+
+			// Moralis.start({serverUrl: "https://ctoh1zj64w6s.usemoralis.com:2053/server", appId: "VpyFBXuuopQQy55GBJ9GYpbO5Zp7XYTAZe7X2lTf"})
+			
+			// var lentNFTList = []
+			// for (var i = 0; i < tokenIds.length; i++ ) {
+			// 	// console.log("getting BORROW  ----- nfts 2")
+
+			// 	const options = { chain: "rinkeby", address: nftContractAddress, token_id: tokenIds[i]};
+			// 	const nftInfo = await Moralis.Web3API.token.getTokenIdMetadata(options);
+
+			// 	lentNFTList.push({
+			// 		"name": JSON.parse(nftInfo.metadata).name,
+			// 		"img": JSON.parse(nftInfo.metadata).image.replace("ipfs://", "https://gateway.pinata.cloud/ipfs/"),
+			// 		"token_address": nftContractAddress,
+			// 		"token_id": tokenIds[i],
+			// 		// "token_uri": 
+			// 	})
+			// }
+			
+			// setNFTListBorrow(lentNFTList)
+			// // console.log(nftListBorrow)
+		}
+  }
+
+
   return (
     <Grid container item xs={12}>
 				<Grid container item xs={3} justifyContent="center">
@@ -226,6 +310,27 @@ export default function Home() {
 						>
 							Mint NFTs
 						</Button>
+
+            <Button
+							variant="outlined" disableElevation
+							style={{ border: '2px solid', height: "50px", width: "100%", margin: "2px", marginTop: "10px", maxWidth: "200px" }}
+							aria-label="View Code"
+							onClick={getDAONFTMoralis}
+							// disabled={(nftList.length >= 2 || numMinted == 50)}
+						>
+							Get DAO NFT MOralis
+						</Button>
+
+            <Button
+							variant="outlined" disableElevation
+							style={{ border: '2px solid', height: "50px", width: "100%", margin: "2px", marginTop: "10px", maxWidth: "200px" }}
+							aria-label="View Code"
+							onClick={getETHPricePrediction}
+							// disabled={(nftList.length >= 2 || numMinted == 50)}
+						>
+							Get ETH Price Prediction
+						</Button>
+
             </div>
 					) : (
 						<Paper elevation={0}
