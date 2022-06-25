@@ -10,13 +10,18 @@ contract MyNFT is ERC721, Ownable {
   Counters.Counter private _tokenIds;
   mapping (uint256 => string) private _tokenURIs;
   
+  /// @dev Base token URI used as a prefix by tokenURI().
+  string public baseTokenURI;
+
   constructor() ERC721("MyNFT", "MNFT") {}
+
   function _setTokenURI(uint256 tokenId, string memory _tokenURI)
     internal
     virtual
   {
     _tokenURIs[tokenId] = _tokenURI;
   }
+
   function tokenURI(uint256 tokenId) 
     public
     view
@@ -28,6 +33,7 @@ contract MyNFT is ERC721, Ownable {
     string memory _tokenURI = _tokenURIs[tokenId];
     return _tokenURI;
   }
+
   function mint(address recipient, string memory uri)
     public
     returns (uint256)
@@ -37,5 +43,10 @@ contract MyNFT is ERC721, Ownable {
     _mint(recipient, newItemId);
     _setTokenURI(newItemId, uri);
     return newItemId;
+  }
+
+  /// @dev Sets the base token URI prefix.
+  function setBaseTokenURI(string memory _baseTokenURI) public onlyOwner {
+    baseTokenURI = _baseTokenURI;
   }
 }
