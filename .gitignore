@@ -1,0 +1,11 @@
+node_modules
+1-IPFS-tutorial/node_modules/*
+.env
+1-IPFS-tutorial/.env
+coverage
+coverage.json
+typechain
+
+#Hardhat files
+cache
+artifacts
