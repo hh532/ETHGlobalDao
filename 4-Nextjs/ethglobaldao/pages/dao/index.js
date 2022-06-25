@@ -25,6 +25,12 @@ export default function Home() {
   const [correctNetwork, setCorrectNetwork] = useState(false)
   const [ETHPriceValue, setETHPriceValue] = useState(0)
 
+  const [ProposalDescription, setProposalDescription] = useState("")
+  const [ProposalChoice1, setProposalChoice1] = useState("")
+  const [ProposalChoice2, setProposalChoice2] = useState("")
+  const [ProposalChoice3, setProposalChoice3] = useState("")
+
+
       // Checks if wallet is connected
 	const checkIfWalletIsConnected = async () => {
 		const { ethereum } = window
@@ -194,6 +200,76 @@ const getDAOMembers = async () => {
 }
 
 
+const handleInputChangeDescription = async (e) => {
+    e.preventDefault()
+
+    setProposalDescription(e.target.value)
+  }
+
+  const handleInputChangeChoice1 = async (e) => {
+    e.preventDefault()
+
+    setProposalChoice1(e.target.value)
+  }
+
+  const handleInputChangeChoice2 = async (e) => {
+    e.preventDefault()
+
+    setProposalChoice2(e.target.value)
+  }
+
+  const handleInputChangeChoice3 = async (e) => {
+    e.preventDefault()
+
+    setProposalChoice3(e.target.value)
+  }
+
+  const createProposal = async () => {
+    try {
+        const { ethereum } = window
+
+        if (ethereum) {
+
+            const provider = new ethers.providers.Web3Provider(ethereum)
+            const signer = provider.getSigner()
+
+            const daoContract = new ethers.Contract(
+                daoContractAddress,
+                DAO.abi,
+                signer
+            )
+
+
+            let nftTx = await daoContract.createProposal(ProposalDescription, ProposalChoice1, ProposalChoice2, ProposalChoice3)
+    console.log('Minting....', nftTx.hash)
+            // setMiningStatus(0)
+
+            let tx = await nftTx.wait()
+            // setLoadingState(1)
+
+            // setMiningStatus(1)
+            // getNFTs()            
+        } else {
+            setWalletError('Please install MetaMask Wallet.')
+        }
+    } catch (error) {
+        // console.log('Error minting character', error)
+        setTxError(error.message)
+    }
+
+  }
+
+  
+  const getProposal = async () => {
+    if (currentAccount != "") {
+			// console.log("getting BORROW  ----- nfts 0")
+            const proposals = await DAOContract.methods.getProposal(1).call() // returns array
+            console.log(proposals)    
+
+		}
+  }
+
+
     return (
         <Grid container item xs={12}>
             <Grid container item xs={3} justifyContent="center">
@@ -233,6 +309,42 @@ const getDAOMembers = async () => {
                             // disabled={(nftList.length >= 2 || numMinted == 50)}
                             >
                             Get DAO Members
+                        </Button>
+
+
+                        <TextField
+                            placeholder="Dao Proposal description goes here"
+                            multiline
+                            rows={2}
+                            maxRows={4}
+                            onChange={handleInputChangeDescription}
+                            />
+
+<TextField id="outlined-basic" type="text" label="Choice 1" variant="outlined" style={{marginTop: "20px" }} onChange={handleInputChangeChoice1}/>
+<TextField id="outlined-basic" type="text" label="Choice 2" variant="outlined" style={{marginTop: "20px" }} onChange={handleInputChangeChoice2}/>
+<TextField id="outlined-basic" type="text" label="Choice 3" variant="outlined" style={{marginTop: "20px" }} onChange={handleInputChangeChoice3}/>
+
+
+<Button
+                            variant="outlined" disableElevation
+                            style={{ border: '2px solid', height: "50px", width: "100%", margin: "2px", marginTop: "10px", maxWidth: "200px" }}
+                            aria-label="View Code"
+                            onClick={createProposal}
+                            // disabled={(nftList.length >= 2 || numMinted == 50)}
+                            >
+                            Create Proposal
+                        </Button>
+
+
+
+                        <Button
+                            variant="outlined" disableElevation
+                            style={{ border: '2px solid', height: "50px", width: "100%", margin: "2px", marginTop: "10px", maxWidth: "200px" }}
+                            aria-label="View Code"
+                            onClick={getProposal}
+                            // disabled={(nftList.length >= 2 || numMinted == 50)}
+                            >
+                            Get Proposal
                         </Button>
 
 </div>
