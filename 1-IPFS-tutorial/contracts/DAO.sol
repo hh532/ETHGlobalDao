@@ -17,6 +17,9 @@ contract DAO {
         string choice1;
         string choice2;
         string choice3;
+        uint256 vouteCountChoice1;
+        uint256 vouteCountChoice2;
+        uint256 vouteCountChoice3;
     }
 
     constructor() {
@@ -42,6 +45,9 @@ contract DAO {
         newProposal.choice1 = _choice1;
         newProposal.choice2 = _choice2;
         newProposal.choice3 = _choice3;
+        newProposal.vouteCountChoice1 = 0;
+        newProposal.vouteCountChoice2 = 0;
+        newProposal.vouteCountChoice3 = 0;
 
         proposalId++;
     }
@@ -50,7 +56,19 @@ contract DAO {
         return  Proposals[proposalId];
     }
 
-    // voteProposal()
+    function voteOnProposal(uint256 proposalId, uint256 choice) public {
+        require(daoContract.balanceOf(msg.sender) >= 1, "You need to mint an ETHGlobalDAO NFT before voting on proposals");
 
-    // getProposalVotes()
+        if (choice == 1) {
+            Proposals[proposalId].vouteCountChoice1 += 1;
+        } else if (choice == 2) {
+            Proposals[proposalId].vouteCountChoice2 += 1;
+        } else { // choice 3
+            Proposals[proposalId].vouteCountChoice3 += 1;
+        }
+    }
+
+    // function getProposalVotes(uint256 proposalId) public {
+    //     Proposals[proposalId]
+    // }
 }

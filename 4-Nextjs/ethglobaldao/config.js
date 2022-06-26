@@ -1,5 +1,5 @@
 export const nftContractAddress = "0xE3988A93E9e1000FFBE318666849d91a6626784c"
-export const daoContractAddress = "0x9A718136b753f6098a372370ec80ba142CDe19B5"
+export const daoContractAddress = "0xA03dd5A80d40fc82162e7628F00E74032ff0C213"
 
 export const nftURI = "ipfs://QmUnQ1ipzyAwScZYBtKdZ2o7QrBsVVdmecXz4UjR2J2kqM"
 // export const REACT_APP_ALCHEMY_KEY = "https://mumbai.infura.io/v3/4461e5a029b3409a8ccedff7e9ed6485"

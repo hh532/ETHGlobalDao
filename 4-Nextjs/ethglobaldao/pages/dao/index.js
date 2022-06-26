@@ -30,6 +30,8 @@ export default function Home() {
   const [ProposalChoice2, setProposalChoice2] = useState("")
   const [ProposalChoice3, setProposalChoice3] = useState("")
 
+  const [proposal, setProposal] = useState("")
+
 
       // Checks if wallet is connected
 	const checkIfWalletIsConnected = async () => {
@@ -259,13 +261,105 @@ const handleInputChangeDescription = async (e) => {
 
   }
 
+  const selectedChoice1 = async () => {
+    try {
+        const { ethereum } = window
+
+        if (ethereum) {
+
+            const provider = new ethers.providers.Web3Provider(ethereum)
+            const signer = provider.getSigner()
+
+            const daoContract = new ethers.Contract(
+                daoContractAddress,
+                DAO.abi,
+                signer
+            )
+
+            let nftTx = await daoContract.voteOnProposal(1, 1)
+    console.log('Minting....', nftTx.hash)
+            // setMiningStatus(0)
+
+            let tx = await nftTx.wait()
+           
+        } else {
+            setWalletError('Please install MetaMask Wallet.')
+        }
+    } catch (error) {
+        // console.log('Error minting character', error)
+        setTxError(error.message)
+    }
+  }
+
+
+  const selectedChoice2 = async () => {
+    try {
+        const { ethereum } = window
+
+        if (ethereum) {
+
+            const provider = new ethers.providers.Web3Provider(ethereum)
+            const signer = provider.getSigner()
+
+            const daoContract = new ethers.Contract(
+                daoContractAddress,
+                DAO.abi,
+                signer
+            )
+
+            let nftTx = await daoContract.voteOnProposal(1, 2)
+    console.log('Minting....', nftTx.hash)
+            // setMiningStatus(0)
+
+            let tx = await nftTx.wait()
+           
+        } else {
+            setWalletError('Please install MetaMask Wallet.')
+        }
+    } catch (error) {
+        // console.log('Error minting character', error)
+        setTxError(error.message)
+    }
+  }
+
+  const selectedChoice3 = async () => {
+    try {
+        const { ethereum } = window
+
+        if (ethereum) {
+
+            const provider = new ethers.providers.Web3Provider(ethereum)
+            const signer = provider.getSigner()
+
+            const daoContract = new ethers.Contract(
+                daoContractAddress,
+                DAO.abi,
+                signer
+            )
+
+            let nftTx = await daoContract.voteOnProposal(1, 3)
+    console.log('Minting....', nftTx.hash)
+            // setMiningStatus(0)
+
+            let tx = await nftTx.wait()
+           
+        } else {
+            setWalletError('Please install MetaMask Wallet.')
+        }
+    } catch (error) {
+        // console.log('Error minting character', error)
+        setTxError(error.message)
+    }
+  }
+
+
   
   const getProposal = async () => {
     if (currentAccount != "") {
 			// console.log("getting BORROW  ----- nfts 0")
-            const proposals = await DAOContract.methods.getProposal(1).call() // returns array
-            console.log(proposals)    
-
+            const proposal = await DAOContract.methods.getProposal(1).call() // returns array
+            console.log(proposal)
+            setProposal(proposal)
 		}
   }
 
@@ -347,6 +441,48 @@ const handleInputChangeDescription = async (e) => {
                             Get Proposal
                         </Button>
 
+
+                        <Grid container item xs={6} justify="center">
+                            <div>
+                                {proposal != "" ? (
+                                    <div >
+                                        {console.log(proposal)}
+                                        <div>{proposal.description}</div>
+                                        <Button
+                                            variant="outlined" disableElevation
+                                            style={{ border: '2px solid', height: "50px", width: "100%", margin: "2px", marginTop: "10px", maxWidth: "200px" }}
+                                            aria-label="View Code"
+                                            onClick={selectedChoice1}
+                                            // disabled={(nftList.length >= 2 || numMinted == 50)}
+                                            >
+                                            Choice 1: {proposal.choice1}
+                                        </Button>
+
+                                        <Button
+                                            variant="outlined" disableElevation
+                                            style={{ border: '2px solid', height: "50px", width: "100%", margin: "2px", marginTop: "10px", maxWidth: "200px" }}
+                                            aria-label="View Code"
+                                            onClick={selectedChoice2}
+                                            // disabled={(nftList.length >= 2 || numMinted == 50)}
+                                            >
+                                            Choice 2: {proposal.choice2}
+                                        </Button>
+
+                                        <Button
+                                            variant="outlined" disableElevation
+                                            style={{ border: '2px solid', height: "50px", width: "100%", margin: "2px", marginTop: "10px", maxWidth: "200px" }}
+                                            aria-label="View Code"
+                                            onClick={selectedChoice3}
+                                            // disabled={(nftList.length >= 2 || numMinted == 50)}
+                                            >
+                                            Choice 3: {proposal.choice3}
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <div></div>
+                                )}
+                            </div>
+                        </Grid>
 </div>
                 ) : (
                     <Paper elevation={0}
