@@ -54,6 +54,11 @@ contract MyNFT is ERC721, Ownable {
   function getPricePrediction(uint256 itemId) public view returns (string memory) {
     return _pricePredictions[itemId];
   }
+
+  function getMintCount() public view returns (Counters.Counter memory) {
+    return _tokenIds;
+  }
+
   // /// @dev Sets the base token URI prefix.
   // function setBaseTokenURI(string memory _baseTokenURI) public onlyOwner {
   //   baseTokenURI = _baseTokenURI;

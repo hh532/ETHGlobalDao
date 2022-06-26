@@ -23,7 +23,7 @@ contract DAO {
     }
 
     constructor() {
-        daoContract = IdaoContract(0xE3988A93E9e1000FFBE318666849d91a6626784c); // address of NFT contract
+        daoContract = IdaoContract(0xAd6608036b3ee773d337e0cb1661a4da452Ae0aC); // address of NFT contract
         proposalId = 1;
     }
 
